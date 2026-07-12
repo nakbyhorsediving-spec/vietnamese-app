@@ -7,7 +7,6 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        /* PCの全画面表示に対応し、スクロールを完全に禁止 */
         html, body {
             width: 100%;
             height: 100%;
@@ -22,7 +21,6 @@
             padding: 20px;
         }
 
-        /* PC大画面で見栄えが良いサイズ（横幅最大1100px、高さは画面の90%固定） */
         .app-window {
             width: 100%;
             max-width: 1100px;
@@ -37,7 +35,6 @@
             border: 1px solid #dcdcdc;
         }
 
-        /* ヘッダー */
         .app-header {
             background-color: #e3f2fd;
             color: #1565c0;
@@ -50,7 +47,6 @@
             letter-spacing: 1px;
         }
 
-        /* メイン画像エリア（画面の縦幅に合わせて自動伸縮） */
         .main-visual {
             width: 100%;
             flex: 1; 
@@ -62,7 +58,6 @@
             display: none;
         }
 
-        /* 顔を隠さない上部中央の吹き出し */
         .speech-bubble {
             position: absolute;
             top: 20px;
@@ -82,7 +77,6 @@
         .speech-bubble::before { content: ''; position: absolute; bottom: -18px; left: 45%; border-width: 15px 15px 0; border-style: solid; border-color: #455a64 transparent; z-index: 9; }
         .bubble-content { font-size: 48px; display: flex; align-items: center; gap: 10px; }
 
-        /* 聞き取り状態の黄色いアナウンス帯 */
         .status-strip {
             background-color: #fffde7;
             border-top: 2px solid #fff59d;
@@ -99,7 +93,6 @@
         @keyframes ear-blink { 0% { opacity: 0.3; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.3; transform: scale(0.95); } }
         .status-text { color: #0d47a1; font-size: 20px; font-weight: 700; }
 
-        /* テキスト表示エリア */
         .content-body {
             padding: 20px 40px;
             display: flex;
@@ -109,7 +102,6 @@
             flex-shrink: 0;
         }
 
-        /* 日本語テキスト */
         .japanese-box {
             font-size: 38px;
             font-weight: 800;
@@ -119,7 +111,6 @@
             text-align: center;
         }
 
-        /* ベトナム語翻訳表示エリア */
         .vietnamese-box {
             width: 100%;
             max-width: 900px;
@@ -134,7 +125,6 @@
         .vn-main-text { font-size: 38px; color: #1b5e20; font-weight: 800; margin-bottom: 4px; }
         .vn-sub-text { font-size: 22px; color: #558b2f; font-weight: 700; letter-spacing: 0.5px; }
 
-        /* 操作パネル */
         .control-panel {
             padding: 20px 40px;
             display: flex;
@@ -144,9 +134,21 @@
             border-top: 1px solid #eceff1;
             flex-shrink: 0;
         }
-        .btn-left-group { display: flex; gap: 15px; }
+        .btn-left-group { display: flex; align-items: center; gap: 15px; }
         
-        /* PCで押しやすい大型の四角形ボタン */
+        /* カテゴリー選択ドロップダウンのスタイル */
+        .category-select {
+            font-size: 20px;
+            font-weight: 700;
+            padding: 12px 20px;
+            border: 2px solid #cfd8dc;
+            border-radius: 8px;
+            background-color: #ffffff;
+            cursor: pointer;
+            outline: none;
+        }
+        .category-select:hover { border-color: #b0bec5; }
+
         .app-btn {
             background: #ffffff;
             border: 2px solid #cfd8dc;
@@ -165,13 +167,11 @@
         .btn-label-ja { font-size: 22px; font-weight: 800; color: #000000; }
         .btn-label-en { font-size: 11px; font-weight: 700; color: #546e7a; margin-top: 2px; text-transform: uppercase; }
 
-        /* きくボタン（専用グリーン） */
         .btn-listen-fast, .btn-listen-slow { background-color: #4caf50; border-color: #43a047; display: none; }
         .btn-listen-fast .btn-label-ja, .btn-listen-slow .btn-label-ja { color: #ffffff; }
         .btn-listen-fast .btn-label-en, .btn-listen-slow .btn-label-en { color: #e8f5e9; }
         .btn-listen-fast:hover, .btn-listen-slow:hover { background-color: #388e3c; border-color: #2e7d32; }
 
-        /* クレジット表記 */
         .credit-text { font-size: 18px; font-weight: 700; color: #000000; }
     </style>
 </head>
@@ -190,7 +190,7 @@
     </div>
     
     <div class="content-body">
-        <div class="japanese-box" id="japaneseText">・「はじめる」を押してください</div>
+        <div class="japanese-box" id="japaneseText">・カテゴリーを選択して「はじめる」を押してください</div>
         <div class="vietnamese-box" id="vietnameseBox">
             <div class="vn-main-text" id="vnMainText"></div>
             <div class="vn-sub-text" id="vnSubText"></div>
@@ -199,6 +199,17 @@
     
     <div class="control-panel">
         <div class="btn-left-group">
+            <!-- カテゴリー選択ドロップダウン -->
+            <select class="category-select" id="categorySelect">
+                <option value="全て">全て</option>
+                <option value="あいさつ">あいさつ</option>
+                <option value="許可">許可</option>
+                <option value="否定">否定</option>
+                <option value="質問">質問</option>
+                <option value="伺う">伺う</option>
+                <option value="ほめる">ほめる</option>
+            </select>
+
             <button class="app-btn" id="btnStart" onclick="startApp()"><span class="btn-label-ja">はじめる</span><span class="btn-label-en">START</span></button>
             <button class="app-btn btn-listen-fast" id="btnListenFast" onclick="playVietnamese(1.0)"><span class="btn-label-ja">きく (はやい)</span><span class="btn-label-en">LISTEN (FAST)</span></button>
             <button class="app-btn btn-listen-slow" id="btnListenSlow" onclick="playVietnamese(0.5)"><span class="btn-label-ja">きく (おそい)</span><span class="btn-label-en">LISTEN (SLOW)</span></button>
@@ -210,14 +221,45 @@
 </div>
 
 <script>
+    // フレーズデータ（カテゴリー分け）
     const phrases = [
-        { js: "今日は来てくれてありがとう", vn: "Cảm ơn bạn hôm nay đã đến.", kana: "カムオン バン ホムナイ ダ デン", icon: "🤝☀️" },
-        { js: "明日は会うことができますか", vn: "Ngày mai chúng ta có thể gặp nhau không?", kana: "ンガイマイ チュンター コーテ ギャップ ニャウ コン", icon: "🤝☀️" },
-        { js: "もっと食べたいです", vn: "Tôi muốn ăn thêm.", kana: "トイ ムオン アン テーム", icon: "🍲😋" },
-        { js: "たくさん肉を買いたいです", vn: "Tôi muốn mua nhiều thịt.", kana: "トイ ムオン ムア ニィエウ ティッ", icon: "🥩🛒" },
-        { js: "犬を飼っていますか", vn: "Bạn có nuôi chó không?", kana: "バン コー ヌオイ チョー コン", icon: "🐶❓" }
+        // あいさつ
+        { cat: "あいさつ", js: "今日は来てくれてありがとう", vn: "Cảm ơn bạn hôm nay đã đến.", kana: "カムオン バン ホムナイ ダ デン", icon: "🤝☀️" },
+        { cat: "あいさつ", js: "またお会いしましょう", vn: "Hẹn gặp lại bạn nhé.", kana: "ヘン ギャップ ライ バン ニェ", icon: "👋✨" },
+        { cat: "あいさつ", js: "家に着いたら早く休んでくださいね", vn: "Về đến nhà hãy nghỉ ngơi sớm nhé.", kana: "ヴェー デン ニャー ハイ ギー ゴイ ソーム ニェ", icon: "🏡🛌" },
+        { cat: "あいさつ", js: "今日はお話しできてとても楽しかったです", vn: "Hôm nay nói chuyện với bạn rất vui.", kana: "ホムナイ ノイ チュエン ヴォイ バン ラッ（ト） ヴイ", icon: "💬😊" },
+        
+        // 許可
+        { cat: "許可", js: "バイクで来てもいいですよ", vn: "Bạn có thể đến bằng xe máy.", kana: "バン コー テー デン バン セーマイ", icon: "🛵👌" },
+        { cat: "許可", js: "友達を連れて来てもいいですよ", vn: "Bạn có thể dẫn bạn theo.", kana: "バン コー テー ジャン バン テオ", icon: "👥👍" },
+        { cat: "許可", js: "写真を撮ってもいいですよ", vn: "Bạn có thể chụp ảnh.", kana: "バン コー テー チュップ アイン", icon: "📸🆗" },
+        { cat: "許可", js: "もっと食べ物を注文してもいいですよ", vn: "Bạn có thể gọi thêm món ăn.", kana: "バン コー テー ゴイ テーム モーン アン", icon: "🍲📝" },
+        
+        // 否定
+        { cat: "否定", js: "それをしてはいけません", vn: "Không được làm điều đó.", kana: "コン ドゥオック ラム ディエウ ドー", icon: "🙅‍♂️❌" },
+        { cat: "否定", js: "すぐにやめてください", vn: "Hãy dừng lại ngay đi.", kana: "ハイ ズン ライ ンガイ ディ", icon: "🛑✋" },
+        { cat: "否定", js: "もう二度としないでください", vn: "Đừng bao giờ làm thế nữa.", kana: "ドゥン バオ ゾー ラム テー ヌア", icon: "⚠️🚫" },
+        
+        // 質問
+        { cat: "質問", js: "明日は会うことができますか", vn: "Ngày mai chúng ta có thể gặp nhau không?", kana: "ンガイマイ チュンター コーテ ギャップ ニャウ コン", icon: "📅❓" },
+        { cat: "質問", js: "犬を飼っていますか", vn: "Bạn có nuôi chó không?", kana: "バン コー ヌオイ チョー コン", icon: "🐶❓" },
+        
+        // 伺う
+        { cat: "伺う", js: "これも私が食べてもいいですか", vn: "Cái này tôi ăn có được không?", kana: "カイ ナイ トイ アン コー ドゥオック コン", icon: "🍲🙋‍♂️" },
+        { cat: "伺う", js: "写真を撮ってもいいですか", vn: "Tôi chụp ảnh có được không?", kana: "トイ チュップ アイン コー ドゥオック コン", icon: "📸🙋‍♀️" },
+        { cat: "伺う", js: "あなたの家に行ってもいいですか", vn: "Tôi đến nhà bạn có được không?", kana: "トイ デン ニャー バン コー ドゥオック コン", icon: "🏡🚶‍♂️" },
+        
+        // ほめる
+        { cat: "ほめる", js: "あなたは料理が上手ですね", vn: "Bạn nấu ăn giỏi quá.", kana: "バン ナウ アン ジョイ クアー", icon: "🍳👏" },
+        { cat: "ほめる", js: "目が大きくてきれいですね", vn: "Mắt bạn to và đẹp quá.", kana: "マッ（ト） バン トォ ヴァー デップ クアー", icon: "👀✨" },
+        { cat: "ほめる", js: "服のセンスがいいですね", vn: "Gu thời trang của bạn đẹp quá.", kana: "グー トイ チャン クア バン デップ クアー", icon: "👔✨" },
+        
+        // その他（既存フレーズの適切な分類）
+        { cat: "ほめる", js: "もっと食べたいです", vn: "Tôi muốn ăn thêm.", kana: "トイ ムオン アン テーム", icon: "😋🍲" },
+        { cat: "伺う", js: "たくさん肉を買いたいです", vn: "Tôi muốn mua nhiều thịt.", kana: "トイ ムオン ムア ニィエウ ティッ", icon: "🥩🛒" }
     ];
 
+    let filteredPhrases = [];
     let availableIndexes = [];
     let currentPhrase = null; 
     let recognition = null; 
@@ -246,19 +288,36 @@
 
     function getNextRandomIndex() {
         if (availableIndexes.length === 0) {
-            availableIndexes = phrases.map((_, index) => index);
+            // 選択されたカテゴリー内のフレーズ数で重複なし配列を再生成
+            availableIndexes = filteredPhrases.map((_, index) => index);
         }
         const randomIndexInArray = Math.floor(Math.random() * availableIndexes.length);
-        const chosenPhraseIndex = availableIndexes.splice(randomIndexInArray, 1)[0];
-        return chosenPhraseIndex;
+        const chosenIndex = availableIndexes.splice(randomIndexInArray, 1)[0];
+        return chosenIndex;
     }
 
     function startApp() {
+        const selectedCategory = document.getElementById('categorySelect').value;
+        
+        // カテゴリーに応じたフレーズのフィルタリング
+        if (selectedCategory === "全て") {
+            filteredPhrases = phrases;
+        } else {
+            filteredPhrases = phrases.filter(p => p.cat === selectedCategory);
+        }
+
+        if (filteredPhrases.length === 0) {
+            alert("該当するフレーズがありません。");
+            return;
+        }
+
+        document.getElementById('categorySelect').style.display = 'none';
         document.getElementById('btnStart').style.display = 'none';
         document.getElementById('btnNext').style.display = 'flex';
         document.getElementById('btnEnd').style.display = 'flex';
         document.getElementById('mainVisual').style.display = 'block';
         document.getElementById('statusStrip').style.display = 'flex';
+        
         availableIndexes = [];
         nextPhrase();
     }
@@ -269,7 +328,7 @@
         document.getElementById('btnListenSlow').style.display = 'none';
         
         const phraseIndex = getNextRandomIndex();
-        currentPhrase = phrases[phraseIndex];
+        currentPhrase = filteredPhrases[phraseIndex];
         
         document.getElementById('japaneseText').innerText = `・${currentPhrase.js}`;
         document.getElementById('bubbleContent').innerText = currentPhrase.icon;
@@ -316,8 +375,10 @@
         document.getElementById('btnListenSlow').style.display = 'none';
         document.getElementById('btnNext').style.display = 'none';
         document.getElementById('btnEnd').style.display = 'none';
+        
+        document.getElementById('categorySelect').style.display = 'inline-block';
         document.getElementById('btnStart').style.display = 'flex';
-        document.getElementById('japaneseText').innerText = `・「はじめる」を押してください`;
+        document.getElementById('japaneseText').innerText = `・カテゴリーを選択して「はじめる」を押してください`;
     }
 </script>
 </body>
