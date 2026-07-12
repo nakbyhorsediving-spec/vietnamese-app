@@ -21,6 +21,7 @@
             padding: 20px;
         }
 
+        /* 横幅・縦幅を最適化し、スクロールを完全に排除 */
         .app-window {
             width: 100%;
             max-width: 1100px;
@@ -35,19 +36,7 @@
             border: 1px solid #dcdcdc;
         }
 
-        .app-header {
-            background-color: #e3f2fd;
-            color: #1565c0;
-            font-size: 28px;
-            font-weight: 800;
-            text-align: center;
-            padding: 15px 0;
-            border-bottom: 2px solid #bbdefb;
-            flex-shrink: 0;
-            letter-spacing: 1px;
-        }
-
-        /* アナウンス帯の廃止にともない、メイン画像エリアを上方向に大きく拡張 */
+        /* メイン画像エリア：最上部のヘッダー廃止にともない、さらに縦方向に拡張 */
         .main-visual {
             width: 100%;
             flex: 1; 
@@ -59,6 +48,20 @@
             display: none;
         }
 
+        /* クレジット表記を画像の右上部に白文字（半透明）で配置 */
+        .image-credit {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            font-weight: 700;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+            z-index: 12;
+            pointer-events: none;
+        }
+
+        /* 顔を隠さない上部中央の吹き出し */
         .speech-bubble {
             position: absolute;
             top: 20px;
@@ -79,7 +82,7 @@
         .bubble-content { font-size: 48px; display: flex; align-items: center; gap: 10px; }
 
         .content-body {
-            padding: 20px 40px;
+            padding: 25px 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -87,7 +90,6 @@
             flex-shrink: 0;
         }
 
-        /* 日本語文表示ボックス（耳マークを左に並べるためにFlexbox化） */
         .japanese-container {
             display: flex;
             align-items: center;
@@ -104,7 +106,6 @@
             text-align: center;
         }
 
-        /* 日本語文の左の耳マーク設定 */
         .ear-mark {
             font-size: 34px;
             display: none;
@@ -130,7 +131,6 @@
         .vn-main-text { font-size: 38px; color: #1b5e20; font-weight: 800; margin-bottom: 4px; }
         .vn-sub-text { font-size: 22px; color: #558b2f; font-weight: 700; letter-spacing: 0.5px; }
 
-        /* 新設：単語解説を表示するエリア */
         .vocab-box {
             width: 100%;
             max-width: 900px;
@@ -146,9 +146,9 @@
         .vocab-list { font-size: 18px; color: #4e342e; font-weight: 600; line-height: 1.5; padding-left: 10px; }
 
         .control-panel {
-            padding: 20px 40px;
+            padding: 25px 40px;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
             background-color: #ffffff;
             border-top: 1px solid #eceff1;
@@ -191,26 +191,23 @@
         .btn-listen-fast .btn-label-en, .btn-listen-slow .btn-label-en { color: #e8f5e9; }
         .btn-listen-fast:hover, .btn-listen-slow:hover { background-color: #388e3c; border-color: #2e7d32; }
 
-        /* 単語解説ボタン用のオレンジカラー */
         .btn-vocab { background-color: #ff9800; border-color: #f57c00; display: none; }
         .btn-vocab .btn-label-ja { color: #ffffff; }
         .btn-vocab .btn-label-en { color: #fff3e0; }
         .btn-vocab:hover { background-color: #f57c00; border-color: #e65100; }
-
-        .credit-text { font-size: 18px; font-weight: 700; color: #000000; }
     </style>
 </head>
 <body>
 
 <div class="app-window">
-    <div class="app-header">LEARN VIETNAMESE: CONVERSATIONS</div>
     
     <div class="main-visual" id="mainVisual">
+        <!-- クレジット表記を白文字で画像の右上部に配置 -->
+        <div class="image-credit">Created by Nakby's world</div>
         <div class="speech-bubble"><div class="bubble-content" id="bubbleContent">❓</div></div>
     </div>
     
     <div class="content-body">
-        <!-- 日本語文と耳マークを横並びにするコンテナ -->
         <div class="japanese-container">
             <span class="ear-mark" id="earMark">👂</span>
             <div class="japanese-box" id="japaneseText">・カテゴリーを選択して「はじめる」を押してください</div>
@@ -221,7 +218,6 @@
             <div class="vn-sub-text" id="vnSubText"></div>
         </div>
 
-        <!-- 単語解説用ボックス -->
         <div class="vocab-box" id="vocabBox">
             <div class="vocab-title">💡 単語解説</div>
             <div class="vocab-list" id="vocabList"></div>
@@ -238,22 +234,21 @@
                 <option value="質問">質問</option>
                 <option value="伺う">伺う</option>
                 <option value="ほめる">ほめる</option>
+                <option value="要望">要望</option> <!-- 新規カテゴリー追加 -->
             </select>
 
             <button class="app-btn" id="btnStart" onclick="startApp()"><span class="btn-label-ja">はじめる</span><span class="btn-label-en">START</span></button>
             <button class="app-btn btn-listen-fast" id="btnListenFast" onclick="playVietnamese(1.0)"><span class="btn-label-ja">きく (はやい)</span><span class="btn-label-en">LISTEN (FAST)</span></button>
-            <!-- おそいスピードを0.5から0.4へさらに減速 -->
             <button class="app-btn btn-listen-slow" id="btnListenSlow" onclick="playVietnamese(0.4)"><span class="btn-label-ja">きく (おそい)</span><span class="btn-label-en">LISTEN (SLOW)</span></button>
             <button class="app-btn btn-vocab" id="btnVocab" onclick="toggleVocab()"><span class="btn-label-ja">単語解説</span><span class="btn-label-en">EXPLANATION</span></button>
             <button class="app-btn" id="btnNext" onclick="nextPhrase()" style="display: none;"><span class="btn-label-ja">つぎへ</span><span class="btn-label-en">NEXT</span></button>
             <button class="app-btn" id="btnEnd" onclick="endApp()" style="display: none;"><span class="btn-label-ja">おわる</span><span class="btn-label-en">END</span></button>
         </div>
-        <div class="credit-text">Created by Nakby's world</div>
     </div>
 </div>
 
 <script>
-    // フレーズデータ（単語解説「words」を追加）
+    // フレーズデータの更新・拡充
     const phrases = [
         // あいさつ
         { cat: "あいさつ", js: "今日は来てくれてありがとう", vn: "Cảm ơn bạn hôm nay đã đến.", kana: "カムオン バン ホムナイ ダ デン", icon: "🤝☀️", words: "Cảm ơn: ありがとう / bạn: あなた / hôm nay: 今日 / đã: 〜した（過去） / đến: 来る" },
@@ -272,9 +267,11 @@
         { cat: "否定", js: "すぐにやめてください", vn: "Hãy dừng lại ngay đi.", kana: "ハイ ズン ライ ンガイ ディ", icon: "🛑✋", words: "Hãy: 〜してください / dừng lại: 立ち止まる、やめる / ngay: すぐに / đi: 〜しなさい（命令・促し）" },
         { cat: "否定", js: "もう二度としないでください", vn: "Đừng bao giờ làm thế nữa.", kana: "ドゥン バオ ゾー ラム テー ヌア", icon: "⚠️🚫", words: "Đừng bao giờ: 決して〜するな / làm: する / thế: そのように / nữa: さらに" },
         
-        // 質問
+        // 質問（新規追加分を含む）
         { cat: "質問", js: "明日は会うことができますか", vn: "Ngày mai chúng ta có thể gặp nhau không?", kana: "ンガイマイ チュンター コーテ ギャップ ニャウ コン", icon: "📅❓", words: "Ngày mai: 明日 / chúng ta: 私たち / có thể: 〜できる / gặp nhau: 互いに会う / không: 〜ですか（疑問文の語尾）" },
         { cat: "質問", js: "犬を飼っていますか", vn: "Bạn có nuôi chó không?", kana: "バン コー ヌオイ チョー コン", icon: "🐶❓", words: "Bạn: あなた / có: 持つ、〜である / nuôi: 飼育する / chó: 犬 / không: 〜ですか（疑問）" },
+        { cat: "質問", js: "この中に何が入っていますか", vn: "Trong này có cái gì thế?", kana: "チョン ナイ コー カイ ジー テー", icon: "📦❓", words: "Trong: 〜の中 / này: これ / có: ある / cái gì: 何 / thế: 〜ですか（親しい疑問表現）" },
+        { cat: "質問", js: "これはベトナム語で何と言いますか", vn: "Cái này tiếng Việt nói là gì?", kana: "カイ ナイ ティエン ヴィエッ（ト） ノイ ラ ジー", icon: "🗣️❓", words: "Cái này: これ / tiếng Việt: ベトナム語 / nói: 言う / là: 〜である / gì: 何" },
         
         // 伺う
         { cat: "伺う", js: "これも私が食べてもいいですか", vn: "Cái này tôi ăn có được không?", kana: "カイ ナイ トイ アン コー ドゥオック コン", icon: "🍲🙋‍♂️", words: "Cái này: これ / tôi: 私 / ăn: 食べる / có được không: （許可を求めて）いいですか" },
@@ -285,10 +282,14 @@
         { cat: "ほめる", js: "あなたは料理が上手ですね", vn: "Bạn nấu ăn giỏi quá.", kana: "バン ナウ アン ジョイ クアー", icon: "🍳👏", words: "Bạn: あなた / nấu ăn: 料理する / giỏi: 上手な / quá: とても〜ですね（感嘆）" },
         { cat: "ほめる", js: "目が大きくてきれいですね", vn: "Mắt bạn to và đẹp quá.", kana: "マッ（ト） バン トォ ヴァー デップ クアー", icon: "👀✨", words: "Mắt: 目 / bạn: あなた / to: 大きい / và: 〜と、そして / đẹp: 美しい / quá: とても〜ですね" },
         { cat: "ほめる", js: "服のセンスがいいですね", vn: "Gu thời trang của bạn đẹp quá.", kana: "グー トイ チャン クア バン デップ クアー", icon: "👔✨", words: "Gu: 好み、センス / thời trang: ファッション / của: 〜の / bạn: あなた / đẹp: 美しい / quá: とても〜ですね" },
-        
-        // 既存フレーズの適切な分類
         { cat: "ほめる", js: "もっと食べたいです", vn: "Tôi muốn ăn thêm.", kana: "トイ ムオン アン テーム", icon: "😋🍲", words: "Tôi: 私 / muốn: 〜したい / ăn: 食べる / thêm: さらに、もっと" },
-        { cat: "伺う", js: "たくさん肉を買いたいです", vn: "Tôi muốn mua nhiều thịt.", kana: "トイ ムオン ムア ニィエウ ティッ", icon: "🥩🛒", words: "Tôi: 私 / muốn: 〜したい / mua: 買う / nhiều: たくさんの / thịt: 肉" }
+        { cat: "伺う", js: "たくさん肉を買いたいです", vn: "Tôi muốn mua nhiều thịt.", kana: "トイ ムオン ムア ニィエウ ティッ", icon: "🥩🛒", words: "Tôi: 私 / muốn: 〜したい / mua: 買う / nhiều: たくさんの / thịt: 肉" },
+        
+        // 要望（新規追加カテゴリー）
+        { cat: "要望", js: "あなたと一緒に公園を散歩したいです", vn: "Tôi muốn đi dạo ở công viên cùng bạn.", kana: "トイ ムオン ディー ザオ オー コンヴィエン クン バン", icon: "🌳🚶‍♂️", words: "Tôi: 私 / muốn: 〜したい / đi dạo: 散歩する / ở: 〜で（場所） / công viên: 公園 / cùng: 〜と一緒に / bạn: あなた" },
+        { cat: "要望", js: "あなたの水着姿を見たいです", vn: "Tôi muốn nhìn thấy bạn mặc đồ bơi.", kana: "トイ ムオン ニイン テイ バン マック ドー ボイ", icon: "👙👀", words: "Tôi: 私 / muốn: 〜したい / nhìn thấy: 見る / bạn: あなた / mặc: 着る / đồ bơi: 水着" },
+        { cat: "要望", js: "あなたが旅行した時の写真を見たいです", vn: "Tôi muốn xem ảnh khi bạn đi du lịch.", kana: "トイ ムオン セム アイン キー バン ディー ズーリック", icon: "✈️📸", words: "Tôi: 私 / muốn: 〜したい / xem: 見る / ảnh: 写真 / khi: 〜の時 / bạn: あなた / đi du lịch: 旅行に行く" },
+        { cat: "要望", js: "ちょっとこれを触ってみたいです", vn: "Tôi muốn thử chạm vào cái này một chút.", kana: "トイ ムオン トゥー チャム ヴァオ カイ ナイ モッ（ト） チュッ（ト）", icon: "👉📦", words: "Tôi: 私 / muốn: 〜したい / thử: 〜してみる / chạm vào: 触れる / cái này: これ / một chút: ちょっと、少し" }
     ];
 
     let filteredPhrases = [];
@@ -313,7 +314,7 @@
         };
         recognition.onresult = function(event) {
             const resultText = event.results[0][0].transcript;
-            if (resultText.replace(/[、。？?]/g, "") === currentPhrase.js.replace(/[、。？?]/g, "")) { showSuccess(); }
+            if (resultText.replace(/[、。？?]/g, "") === currentPhrase.js.replace(/[..。？?]/g, "")) { showSuccess(); }
         };
     }
 
