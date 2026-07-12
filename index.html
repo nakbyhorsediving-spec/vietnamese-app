@@ -2,51 +2,181 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ベトナム語学習アプリ</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f7f9fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .app-window { width: 100%; max-width: 960px; background: #ffffff; border-radius: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; position: relative; }
-        .app-header { background-color: #e3f2fd; color: #1565c0; font-size: 28px; font-weight: 800; text-align: center; padding: 12px 0; border-bottom: 2px solid #bbdefb; }
-        .main-visual { width: 100%; height: 480px; background-color: #f5f5f5; background-image: url('cafe.png'); background-size: cover; background-position: center; position: relative; display: none; }
-        .speech-bubble { position: absolute; top: 25px; left: 50%; transform: translateX(-50%); background: #ffffff; border: 3px solid #455a64; border-radius: 30px; padding: 10px 25px; box-shadow: 0 6px 16px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; z-index: 10; }
+        
+        /* 画面スクロールを禁止し、縦幅いっぱいに収める設定 */
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f7f9fa;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        /* 画面内にぴったり収まるよう縦幅をvh単位で制御 */
+        .app-window {
+            width: 100%;
+            max-width: 900px;
+            height: 95vh;
+            max-height: 800px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .app-header {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            font-size: 24px;
+            font-weight: 800;
+            text-align: center;
+            padding: 10px 0;
+            border-bottom: 2px solid #bbdefb;
+            flex-shrink: 0;
+        }
+
+        /* 画像エリアの縦幅を少しコンパクトにし、スクロールを防ぐ */
+        .main-visual {
+            width: 100%;
+            flex: 1;
+            min-height: 200px;
+            background-color: #f5f5f5;
+            background-image: url('cafe.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: none;
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            border: 3px solid #455a64;
+            border-radius: 30px;
+            padding: 8px 20px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
         .speech-bubble::after { content: ''; position: absolute; bottom: -12px; left: 45%; border-width: 12px 12px 0; border-style: solid; border-color: #ffffff transparent; z-index: 11; }
         .speech-bubble::before { content: ''; position: absolute; bottom: -16px; left: 45%; border-width: 13px 13px 0; border-style: solid; border-color: #455a64 transparent; z-index: 9; }
-        .bubble-content { font-size: 45px; display: flex; align-items: center; gap: 10px; }
-        .status-strip { background-color: #fffde7; border-top: 2px solid #fff59d; border-bottom: 2px solid #fff59d; padding: 10px 20px; display: none; align-items: center; justify-content: center; gap: 15px; }
-        .ear-mark { font-size: 28px; display: inline-block; }
+        .bubble-content { font-size: 38px; display: flex; align-items: center; gap: 10px; }
+
+        .status-strip {
+            background-color: #fffde7;
+            border-top: 2px solid #fff59d;
+            border-bottom: 2px solid #fff59d;
+            padding: 8px 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+        .ear-mark { font-size: 24px; display: inline-block; }
         .ear-active { animation: ear-blink 1.2s infinite ease-in-out; }
         @keyframes ear-blink { 0% { opacity: 0.3; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.3; transform: scale(0.95); } }
-        .status-text { color: #0d47a1; font-size: 22px; font-weight: 700; }
-        .content-body { padding: 25px; display: flex; flex-direction: column; align-items: center; background-color: #ffffff; }
-        .japanese-box { font-size: 38px; font-weight: 800; color: #000000; margin: 10px 0; line-height: 1.4; text-align: center; }
-        .vietnamese-box { width: 100%; max-width: 800px; background-color: #f1f8e9; border: 2px solid #c5e1a5; border-radius: 12px; padding: 20px; margin-top: 15px; text-align: center; display: none; }
-        .vn-main-text { font-size: 40px; color: #1b5e20; font-weight: 800; margin-bottom: 8px; }
-        .vn-sub-text { font-size: 24px; color: #558b2f; font-weight: 700; }
-        .control-panel { padding: 20px 30px 30px 30px; display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; border-top: 1px solid #eceff1; }
-        .btn-left-group { display: flex; gap: 12px; }
-        .app-btn { background: #ffffff; border: 2px solid #cfd8dc; border-radius: 8px; padding: 8px 24px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 3px 6px rgba(0,0,0,0.05); transition: all 0.2s; }
+        .status-text { color: #0d47a1; font-size: 18px; font-weight: 700; }
+
+        .content-body {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #ffffff;
+            flex-shrink: 0;
+        }
+
+        .japanese-box {
+            font-size: 32px;
+            font-weight: 800;
+            color: #000000;
+            margin: 5px 0;
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        .vietnamese-box {
+            width: 100%;
+            max-width: 800px;
+            background-color: #f1f8e9;
+            border: 2px solid #c5e1a5;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        .vn-main-text { font-size: 32px; color: #1b5e20; font-weight: 800; margin-bottom: 4px; }
+        .vn-sub-text { font-size: 20px; color: #558b2f; font-weight: 700; }
+
+        .control-panel {
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ffffff;
+            border-top: 1px solid #eceff1;
+            flex-shrink: 0;
+        }
+        .btn-left-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        .app-btn {
+            background: #ffffff;
+            border: 2px solid #cfd8dc;
+            border-radius: 8px;
+            padding: 6px 20px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
         .app-btn:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .btn-label-ja { font-size: 22px; font-weight: 800; color: #000000; }
-        .btn-label-en { font-size: 12px; font-weight: 700; color: #546e7a; margin-top: 2px; text-transform: uppercase; }
+        .btn-label-ja { font-size: 18px; font-weight: 800; color: #000000; }
+        .btn-label-en { font-size: 10px; font-weight: 700; color: #546e7a; margin-top: 1px; text-transform: uppercase; }
+
         .btn-listen-fast, .btn-listen-slow { background-color: #4caf50; border-color: #43a047; display: none; }
         .btn-listen-fast .btn-label-ja, .btn-listen-slow .btn-label-ja { color: #ffffff; }
         .btn-listen-fast .btn-label-en, .btn-listen-slow .btn-label-en { color: #e8f5e9; }
-        .credit-text { font-size: 18px; font-weight: 700; color: #000000; }
+
+        .credit-text { font-size: 16px; font-weight: 700; color: #000000; white-space: nowrap; }
     </style>
 </head>
 <body>
 
 <div class="app-window">
     <div class="app-header">LEARN VIETNAMESE: CONVERSATIONS</div>
+    
     <div class="main-visual" id="mainVisual">
         <div class="speech-bubble"><div class="bubble-content" id="bubbleContent">❓</div></div>
     </div>
+    
     <div class="status-strip" id="statusStrip">
         <span class="ear-mark" id="earMark">👂</span>
         <span class="status-text" id="statusText">LISTENING... PLEASE SPEAK THE JAPANESE PHRASE</span>
     </div>
+    
     <div class="content-body">
         <div class="japanese-box" id="japaneseText">・「はじめる」を押してください</div>
         <div class="vietnamese-box" id="vietnameseBox">
@@ -54,11 +184,12 @@
             <div class="vn-sub-text" id="vnSubText"></div>
         </div>
     </div>
+    
     <div class="control-panel">
         <div class="btn-left-group">
             <button class="app-btn" id="btnStart" onclick="startApp()"><span class="btn-label-ja">はじめる</span><span class="btn-label-en">START</span></button>
             <button class="app-btn btn-listen-fast" id="btnListenFast" onclick="playVietnamese(1.0)"><span class="btn-label-ja">きく (はやい)</span><span class="btn-label-en">LISTEN (FAST)</span></button>
-            <button class="app-btn btn-listen-slow" id="btnListenSlow" onclick="playVietnamese(0.65)"><span class="btn-label-ja">きく (おそい)</span><span class="btn-label-en">LISTEN (SLOW)</span></button>
+            <button class="app-btn btn-listen-slow" id="btnListenSlow" onclick="playVietnamese(0.5)"><span class="btn-label-ja">きく (おそい)</span><span class="btn-label-en">LISTEN (SLOW)</span></button>
             <button class="app-btn" id="btnNext" onclick="nextPhrase()" style="display: none;"><span class="btn-label-ja">つぎへ</span><span class="btn-label-en">NEXT</span></button>
             <button class="app-btn" id="btnEnd" onclick="endApp()" style="display: none;"><span class="btn-label-ja">おわる</span><span class="btn-label-en">END</span></button>
         </div>
@@ -75,11 +206,17 @@
         { js: "犬を飼っていますか", vn: "Bạn có nuôi chó không?", kana: "バン コー ヌオイ チョー コン", icon: "🐶❓" }
     ];
 
-    let currentPhrase = null; let recognition = null; let isListening = false;
+    // 重複なしランダム管理用の配列
+    let availableIndexes = [];
+    let currentPhrase = null; 
+    let recognition = null; 
+    let isListening = false;
 
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition(); recognition.lang = 'ja-JP'; recognition.interimResults = false;
+        recognition = new SpeechRecognition(); 
+        recognition.lang = 'ja-JP'; 
+        recognition.interimResults = false;
 
         recognition.onstart = function() {
             isListening = true;
@@ -96,19 +233,36 @@
         };
     }
 
+    // 重複なしでランダムに1つのインデックスを抽出する関数
+    function getNextRandomIndex() {
+        if (availableIndexes.length === 0) {
+            // 5問すべて使い切ったら、インデックス配列(0〜4)を再生成してリセット
+            availableIndexes = phrases.map((_, index) => index);
+        }
+        const randomIndexInArray = Math.floor(Math.random() * availableIndexes.length);
+        const chosenPhraseIndex = availableIndexes.splice(randomIndexInArray, 1)[0];
+        return chosenPhraseIndex;
+    }
+
     function startApp() {
         document.getElementById('btnStart').style.display = 'none';
         document.getElementById('btnNext').style.display = 'flex';
         document.getElementById('btnEnd').style.display = 'flex';
         document.getElementById('mainVisual').style.display = 'block';
         document.getElementById('statusStrip').style.display = 'flex';
+        availableIndexes = []; // 出題リストを初期化
         nextPhrase();
     }
+
     function nextPhrase() {
         document.getElementById('vietnameseBox').style.display = 'none';
         document.getElementById('btnListenFast').style.display = 'none';
         document.getElementById('btnListenSlow').style.display = 'none';
-        currentPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+        
+        // 重複なしランダムで次のフレーズを決定
+        const phraseIndex = getNextRandomIndex();
+        currentPhrase = phrases[phraseIndex];
+        
         document.getElementById('japaneseText').innerText = `・${currentPhrase.js}`;
         document.getElementById('bubbleContent').innerText = currentPhrase.icon;
 
@@ -120,6 +274,7 @@
             setTimeout(showSuccess, 3000);
         }
     }
+
     function showSuccess() {
         isListening = false; if(recognition) { try { recognition.stop(); } catch(e) {} }
         document.getElementById('earMark').classList.remove('ear-active');
@@ -131,17 +286,21 @@
         document.getElementById('btnListenSlow').style.display = 'flex';
         playVietnamese(1.0);
     }
+
     function playVietnamese(speedRate) {
         if ('speechSynthesis' in window && currentPhrase) {
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(currentPhrase.vn);
-            utterance.lang = 'vi-VN'; utterance.rate = speedRate;
+            utterance.lang = 'vi-VN'; 
+            utterance.rate = speedRate;
             window.speechSynthesis.speak(utterance);
         }
     }
+
     function endApp() {
         isListening = false; if(recognition) { try { recognition.stop(); } catch(e) {} }
         currentPhrase = null;
+        availableIndexes = [];
         document.getElementById('mainVisual').style.display = 'none';
         document.getElementById('statusStrip').style.display = 'none';
         document.getElementById('vietnameseBox').style.display = 'none';
