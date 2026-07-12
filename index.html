@@ -47,6 +47,7 @@
             letter-spacing: 1px;
         }
 
+        /* アナウンス帯の廃止にともない、メイン画像エリアを上方向に大きく拡張 */
         .main-visual {
             width: 100%;
             flex: 1; 
@@ -77,22 +78,6 @@
         .speech-bubble::before { content: ''; position: absolute; bottom: -18px; left: 45%; border-width: 15px 15px 0; border-style: solid; border-color: #455a64 transparent; z-index: 9; }
         .bubble-content { font-size: 48px; display: flex; align-items: center; gap: 10px; }
 
-        .status-strip {
-            background-color: #fffde7;
-            border-top: 2px solid #fff59d;
-            border-bottom: 2px solid #fff59d;
-            padding: 12px 20px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            flex-shrink: 0;
-        }
-        .ear-mark { font-size: 26px; display: inline-block; }
-        .ear-active { animation: ear-blink 1.2s infinite ease-in-out; }
-        @keyframes ear-blink { 0% { opacity: 0.3; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.3; transform: scale(0.95); } }
-        .status-text { color: #0d47a1; font-size: 20px; font-weight: 700; }
-
         .content-body {
             padding: 20px 40px;
             display: flex;
@@ -102,14 +87,34 @@
             flex-shrink: 0;
         }
 
+        /* 日本語文表示ボックス（耳マークを左に並べるためにFlexbox化） */
+        .japanese-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 5px 0;
+        }
+
         .japanese-box {
             font-size: 38px;
             font-weight: 800;
             color: #000000;
-            margin: 5px 0;
             line-height: 1.4;
             text-align: center;
         }
+
+        /* 日本語文の左の耳マーク設定 */
+        .ear-mark {
+            font-size: 34px;
+            display: none;
+            visibility: hidden;
+        }
+        .ear-active {
+            visibility: visible;
+            animation: ear-blink 1.2s infinite ease-in-out;
+        }
+        @keyframes ear-blink { 0% { opacity: 0.3; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.3; transform: scale(0.95); } }
 
         .vietnamese-box {
             width: 100%;
@@ -125,6 +130,21 @@
         .vn-main-text { font-size: 38px; color: #1b5e20; font-weight: 800; margin-bottom: 4px; }
         .vn-sub-text { font-size: 22px; color: #558b2f; font-weight: 700; letter-spacing: 0.5px; }
 
+        /* 新設：単語解説を表示するエリア */
+        .vocab-box {
+            width: 100%;
+            max-width: 900px;
+            background-color: #fff3e0;
+            border: 2px solid #ffe0b2;
+            border-radius: 14px;
+            padding: 15px 20px;
+            margin-top: 10px;
+            text-align: left;
+            display: none;
+        }
+        .vocab-title { font-size: 20px; color: #e65100; font-weight: 800; margin-bottom: 6px; border-bottom: 1px dashed #ffb74d; padding-bottom: 3px; }
+        .vocab-list { font-size: 18px; color: #4e342e; font-weight: 600; line-height: 1.5; padding-left: 10px; }
+
         .control-panel {
             padding: 20px 40px;
             display: flex;
@@ -134,9 +154,8 @@
             border-top: 1px solid #eceff1;
             flex-shrink: 0;
         }
-        .btn-left-group { display: flex; align-items: center; gap: 15px; }
+        .btn-left-group { display: flex; gap: 15px; }
         
-        /* カテゴリー選択ドロップダウンのスタイル */
         .category-select {
             font-size: 20px;
             font-weight: 700;
@@ -172,6 +191,12 @@
         .btn-listen-fast .btn-label-en, .btn-listen-slow .btn-label-en { color: #e8f5e9; }
         .btn-listen-fast:hover, .btn-listen-slow:hover { background-color: #388e3c; border-color: #2e7d32; }
 
+        /* 単語解説ボタン用のオレンジカラー */
+        .btn-vocab { background-color: #ff9800; border-color: #f57c00; display: none; }
+        .btn-vocab .btn-label-ja { color: #ffffff; }
+        .btn-vocab .btn-label-en { color: #fff3e0; }
+        .btn-vocab:hover { background-color: #f57c00; border-color: #e65100; }
+
         .credit-text { font-size: 18px; font-weight: 700; color: #000000; }
     </style>
 </head>
@@ -184,22 +209,27 @@
         <div class="speech-bubble"><div class="bubble-content" id="bubbleContent">❓</div></div>
     </div>
     
-    <div class="status-strip" id="statusStrip">
-        <span class="ear-mark" id="earMark">👂</span>
-        <span class="status-text" id="statusText">LISTENING... PLEASE SPEAK THE JAPANESE PHRASE</span>
-    </div>
-    
     <div class="content-body">
-        <div class="japanese-box" id="japaneseText">・カテゴリーを選択して「はじめる」を押してください</div>
+        <!-- 日本語文と耳マークを横並びにするコンテナ -->
+        <div class="japanese-container">
+            <span class="ear-mark" id="earMark">👂</span>
+            <div class="japanese-box" id="japaneseText">・カテゴリーを選択して「はじめる」を押してください</div>
+        </div>
+
         <div class="vietnamese-box" id="vietnameseBox">
             <div class="vn-main-text" id="vnMainText"></div>
             <div class="vn-sub-text" id="vnSubText"></div>
+        </div>
+
+        <!-- 単語解説用ボックス -->
+        <div class="vocab-box" id="vocabBox">
+            <div class="vocab-title">💡 単語解説</div>
+            <div class="vocab-list" id="vocabList"></div>
         </div>
     </div>
     
     <div class="control-panel">
         <div class="btn-left-group">
-            <!-- カテゴリー選択ドロップダウン -->
             <select class="category-select" id="categorySelect">
                 <option value="全て">全て</option>
                 <option value="あいさつ">あいさつ</option>
@@ -212,7 +242,9 @@
 
             <button class="app-btn" id="btnStart" onclick="startApp()"><span class="btn-label-ja">はじめる</span><span class="btn-label-en">START</span></button>
             <button class="app-btn btn-listen-fast" id="btnListenFast" onclick="playVietnamese(1.0)"><span class="btn-label-ja">きく (はやい)</span><span class="btn-label-en">LISTEN (FAST)</span></button>
-            <button class="app-btn btn-listen-slow" id="btnListenSlow" onclick="playVietnamese(0.5)"><span class="btn-label-ja">きく (おそい)</span><span class="btn-label-en">LISTEN (SLOW)</span></button>
+            <!-- おそいスピードを0.5から0.4へさらに減速 -->
+            <button class="app-btn btn-listen-slow" id="btnListenSlow" onclick="playVietnamese(0.4)"><span class="btn-label-ja">きく (おそい)</span><span class="btn-label-en">LISTEN (SLOW)</span></button>
+            <button class="app-btn btn-vocab" id="btnVocab" onclick="toggleVocab()"><span class="btn-label-ja">単語解説</span><span class="btn-label-en">EXPLANATION</span></button>
             <button class="app-btn" id="btnNext" onclick="nextPhrase()" style="display: none;"><span class="btn-label-ja">つぎへ</span><span class="btn-label-en">NEXT</span></button>
             <button class="app-btn" id="btnEnd" onclick="endApp()" style="display: none;"><span class="btn-label-ja">おわる</span><span class="btn-label-en">END</span></button>
         </div>
@@ -221,42 +253,42 @@
 </div>
 
 <script>
-    // フレーズデータ（カテゴリー分け）
+    // フレーズデータ（単語解説「words」を追加）
     const phrases = [
         // あいさつ
-        { cat: "あいさつ", js: "今日は来てくれてありがとう", vn: "Cảm ơn bạn hôm nay đã đến.", kana: "カムオン バン ホムナイ ダ デン", icon: "🤝☀️" },
-        { cat: "あいさつ", js: "またお会いしましょう", vn: "Hẹn gặp lại bạn nhé.", kana: "ヘン ギャップ ライ バン ニェ", icon: "👋✨" },
-        { cat: "あいさつ", js: "家に着いたら早く休んでくださいね", vn: "Về đến nhà hãy nghỉ ngơi sớm nhé.", kana: "ヴェー デン ニャー ハイ ギー ゴイ ソーム ニェ", icon: "🏡🛌" },
-        { cat: "あいさつ", js: "今日はお話しできてとても楽しかったです", vn: "Hôm nay nói chuyện với bạn rất vui.", kana: "ホムナイ ノイ チュエン ヴォイ バン ラッ（ト） ヴイ", icon: "💬😊" },
+        { cat: "あいさつ", js: "今日は来てくれてありがとう", vn: "Cảm ơn bạn hôm nay đã đến.", kana: "カムオン バン ホムナイ ダ デン", icon: "🤝☀️", words: "Cảm ơn: ありがとう / bạn: あなた / hôm nay: 今日 / đã: 〜した（過去） / đến: 来る" },
+        { cat: "あいさつ", js: "またお会いしましょう", vn: "Hẹn gặp lại bạn nhé.", kana: "ヘン ギャップ ライ バン ニェ", icon: "👋✨", words: "Hẹn: 約束する / gặp lại: 再会する / bạn: あなた / nhé: 〜ね（親しみを込めた語尾）" },
+        { cat: "あいさつ", js: "家に着いたら早く休んでくださいね", vn: "Về đến nhà hãy nghỉ ngơi sớm nhé.", kana: "ヴェー デン ニャー ハイ ギー ゴイ ソーム ニェ", icon: "🏡🛌", words: "Về: 戻る / đến: 到着する / nhà: 家 / hãy: 〜してください / nghỉ ngơi: 休む / sớm: 早く / nhé: 〜ね" },
+        { cat: "あいさつ", js: "今日はお話しできてとても楽しかったです", vn: "Hôm nay nói chuyện với bạn rất vui.", kana: "ホムナイ ノイ チュエン ヴォイ バン ラッ（ト） ヴイ", icon: "💬😊", words: "Hôm nay: 今日 / nói chuyện: 話す / với: 〜と / bạn: あなた / rất: とても / vui: 楽しい" },
         
         // 許可
-        { cat: "許可", js: "バイクで来てもいいですよ", vn: "Bạn có thể đến bằng xe máy.", kana: "バン コー テー デン バン セーマイ", icon: "🛵👌" },
-        { cat: "許可", js: "友達を連れて来てもいいですよ", vn: "Bạn có thể dẫn bạn theo.", kana: "バン コー テー ジャン バン テオ", icon: "👥👍" },
-        { cat: "許可", js: "写真を撮ってもいいですよ", vn: "Bạn có thể chụp ảnh.", kana: "バン コー テー チュップ アイン", icon: "📸🆗" },
-        { cat: "許可", js: "もっと食べ物を注文してもいいですよ", vn: "Bạn có thể gọi thêm món ăn.", kana: "バン コー テー ゴイ テーム モーン アン", icon: "🍲📝" },
+        { cat: "許可", js: "バイクで来てもいいですよ", vn: "Bạn có thể đến bằng xe máy.", kana: "バン コー テー デン バン セーマイ", icon: "🛵👌", words: "Bạn: あなた / có thể: 〜できる / đến: 来る / bằng: 〜によって（手段） / xe máy: バイク" },
+        { cat: "許可", js: "友達を連れて来てもいいですよ", vn: "Bạn có thể dẫn bạn theo.", kana: "バン コー テー ジャン バン テオ", icon: "👥👍", words: "Bạn: あなた / có thể: 〜できる / dẫn: 連れる / bạn: 友達 / theo: 伴って" },
+        { cat: "許可", js: "写真を撮ってもいいですよ", vn: "Bạn có thể chụp ảnh.", kana: "バン コー テー チュップ アイン", icon: "📸🆗", words: "Bạn: あなた / có thể: 〜できる / chụp ảnh: 写真を撮る" },
+        { cat: "許可", js: "もっと食べ物を注文してもいいですよ", vn: "Bạn có thể gọi thêm món ăn.", kana: "バン コー テー ゴイ テーム モーン アン", icon: "🍲📝", words: "Bạn: あなた / có thể: 〜できる / gọi: 呼ぶ、注文する / thêm: もっと、追加で / món ăn: 料理・食べ物" },
         
         // 否定
-        { cat: "否定", js: "それをしてはいけません", vn: "Không được làm điều đó.", kana: "コン ドゥオック ラム ディエウ ドー", icon: "🙅‍♂️❌" },
-        { cat: "否定", js: "すぐにやめてください", vn: "Hãy dừng lại ngay đi.", kana: "ハイ ズン ライ ンガイ ディ", icon: "🛑✋" },
-        { cat: "否定", js: "もう二度としないでください", vn: "Đừng bao giờ làm thế nữa.", kana: "ドゥン バオ ゾー ラム テー ヌア", icon: "⚠️🚫" },
+        { cat: "否定", js: "それをしてはいけません", vn: "Không được làm điều đó.", kana: "コン ドゥオック ラム ディエウ ドー", icon: "🙅‍♂️❌", words: "Không được: 〜してはいけない / làm: する / điều đó: そのこと" },
+        { cat: "否定", js: "すぐにやめてください", vn: "Hãy dừng lại ngay đi.", kana: "ハイ ズン ライ ンガイ ディ", icon: "🛑✋", words: "Hãy: 〜してください / dừng lại: 立ち止まる、やめる / ngay: すぐに / đi: 〜しなさい（命令・促し）" },
+        { cat: "否定", js: "もう二度としないでください", vn: "Đừng bao giờ làm thế nữa.", kana: "ドゥン バオ ゾー ラム テー ヌア", icon: "⚠️🚫", words: "Đừng bao giờ: 決して〜するな / làm: する / thế: そのように / nữa: さらに" },
         
         // 質問
-        { cat: "質問", js: "明日は会うことができますか", vn: "Ngày mai chúng ta có thể gặp nhau không?", kana: "ンガイマイ チュンター コーテ ギャップ ニャウ コン", icon: "📅❓" },
-        { cat: "質問", js: "犬を飼っていますか", vn: "Bạn có nuôi chó không?", kana: "バン コー ヌオイ チョー コン", icon: "🐶❓" },
+        { cat: "質問", js: "明日は会うことができますか", vn: "Ngày mai chúng ta có thể gặp nhau không?", kana: "ンガイマイ チュンター コーテ ギャップ ニャウ コン", icon: "📅❓", words: "Ngày mai: 明日 / chúng ta: 私たち / có thể: 〜できる / gặp nhau: 互いに会う / không: 〜ですか（疑問文の語尾）" },
+        { cat: "質問", js: "犬を飼っていますか", vn: "Bạn có nuôi chó không?", kana: "バン コー ヌオイ チョー コン", icon: "🐶❓", words: "Bạn: あなた / có: 持つ、〜である / nuôi: 飼育する / chó: 犬 / không: 〜ですか（疑問）" },
         
         // 伺う
-        { cat: "伺う", js: "これも私が食べてもいいですか", vn: "Cái này tôi ăn có được không?", kana: "カイ ナイ トイ アン コー ドゥオック コン", icon: "🍲🙋‍♂️" },
-        { cat: "伺う", js: "写真を撮ってもいいですか", vn: "Tôi chụp ảnh có được không?", kana: "トイ チュップ アイン コー ドゥオック コン", icon: "📸🙋‍♀️" },
-        { cat: "伺う", js: "あなたの家に行ってもいいですか", vn: "Tôi đến nhà bạn có được không?", kana: "トイ デン ニャー バン コー ドゥオック コン", icon: "🏡🚶‍♂️" },
+        { cat: "伺う", js: "これも私が食べてもいいですか", vn: "Cái này tôi ăn có được không?", kana: "カイ ナイ トイ アン コー ドゥオック コン", icon: "🍲🙋‍♂️", words: "Cái này: これ / tôi: 私 / ăn: 食べる / có được không: （許可を求めて）いいですか" },
+        { cat: "伺う", js: "写真を撮ってもいいですか", vn: "Tôi chụp ảnh có được không?", kana: "トイ チュップ アイン コー ドゥオック コン", icon: "📸🙋‍♀️", words: "Tôi: 私 / chụp ảnh: 写真を撮る / có được không: いいですか" },
+        { cat: "伺う", js: "あなたの家に行ってもいいですか", vn: "Tôi đến nhà bạn có được không?", kana: "トイ デン ニャー バン コー ドゥオック コン", icon: "🏡🚶‍♂️", words: "Tôi: 私 / đến: 行く、来る / nhà: 家 / bạn: あなた / có được không: いいですか" },
         
         // ほめる
-        { cat: "ほめる", js: "あなたは料理が上手ですね", vn: "Bạn nấu ăn giỏi quá.", kana: "バン ナウ アン ジョイ クアー", icon: "🍳👏" },
-        { cat: "ほめる", js: "目が大きくてきれいですね", vn: "Mắt bạn to và đẹp quá.", kana: "マッ（ト） バン トォ ヴァー デップ クアー", icon: "👀✨" },
-        { cat: "ほめる", js: "服のセンスがいいですね", vn: "Gu thời trang của bạn đẹp quá.", kana: "グー トイ チャン クア バン デップ クアー", icon: "👔✨" },
+        { cat: "ほめる", js: "あなたは料理が上手ですね", vn: "Bạn nấu ăn giỏi quá.", kana: "バン ナウ アン ジョイ クアー", icon: "🍳👏", words: "Bạn: あなた / nấu ăn: 料理する / giỏi: 上手な / quá: とても〜ですね（感嘆）" },
+        { cat: "ほめる", js: "目が大きくてきれいですね", vn: "Mắt bạn to và đẹp quá.", kana: "マッ（ト） バン トォ ヴァー デップ クアー", icon: "👀✨", words: "Mắt: 目 / bạn: あなた / to: 大きい / và: 〜と、そして / đẹp: 美しい / quá: とても〜ですね" },
+        { cat: "ほめる", js: "服のセンスがいいですね", vn: "Gu thời trang của bạn đẹp quá.", kana: "グー トイ チャン クア バン デップ クアー", icon: "👔✨", words: "Gu: 好み、センス / thời trang: ファッション / của: 〜の / bạn: あなた / đẹp: 美しい / quá: とても〜ですね" },
         
-        // その他（既存フレーズの適切な分類）
-        { cat: "ほめる", js: "もっと食べたいです", vn: "Tôi muốn ăn thêm.", kana: "トイ ムオン アン テーム", icon: "😋🍲" },
-        { cat: "伺う", js: "たくさん肉を買いたいです", vn: "Tôi muốn mua nhiều thịt.", kana: "トイ ムオン ムア ニィエウ ティッ", icon: "🥩🛒" }
+        // 既存フレーズの適切な分類
+        { cat: "ほめる", js: "もっと食べたいです", vn: "Tôi muốn ăn thêm.", kana: "トイ ムオン アン テーム", icon: "😋🍲", words: "Tôi: 私 / muốn: 〜したい / ăn: 食べる / thêm: さらに、もっと" },
+        { cat: "伺う", js: "たくさん肉を買いたいです", vn: "Tôi muốn mua nhiều thịt.", kana: "トイ ムオン ムア ニィエウ ティッ", icon: "🥩🛒", words: "Tôi: 私 / muốn: 〜したい / mua: 買う / nhiều: たくさんの / thịt: 肉" }
     ];
 
     let filteredPhrases = [];
@@ -273,22 +305,20 @@
 
         recognition.onstart = function() {
             isListening = true;
+            document.getElementById('earMark').style.display = 'inline-block';
             document.getElementById('earMark').classList.add('ear-active');
-            document.getElementById('statusText').innerText = "LISTENING... PLEASE SPEAK THE JAPANESE PHRASE";
         };
         recognition.onend = function() {
             if (isListening && currentPhrase) { try { recognition.start(); } catch(e) {} }
         };
         recognition.onresult = function(event) {
             const resultText = event.results[0][0].transcript;
-            if (resultText.replace(/[、。？?]/g, "") === currentPhrase.js.replace(/[、。？?]/g, "")) { showSuccess(); } 
-            else { document.getElementById('statusText').innerText = `TRY AGAIN (聞き取り: ${resultText})`; }
+            if (resultText.replace(/[、。？?]/g, "") === currentPhrase.js.replace(/[、。？?]/g, "")) { showSuccess(); }
         };
     }
 
     function getNextRandomIndex() {
         if (availableIndexes.length === 0) {
-            // 選択されたカテゴリー内のフレーズ数で重複なし配列を再生成
             availableIndexes = filteredPhrases.map((_, index) => index);
         }
         const randomIndexInArray = Math.floor(Math.random() * availableIndexes.length);
@@ -298,25 +328,16 @@
 
     function startApp() {
         const selectedCategory = document.getElementById('categorySelect').value;
-        
-        // カテゴリーに応じたフレーズのフィルタリング
-        if (selectedCategory === "全て") {
-            filteredPhrases = phrases;
-        } else {
-            filteredPhrases = phrases.filter(p => p.cat === selectedCategory);
-        }
+        if (selectedCategory === "全て") { filteredPhrases = phrases; } 
+        else { filteredPhrases = phrases.filter(p => p.cat === selectedCategory); }
 
-        if (filteredPhrases.length === 0) {
-            alert("該当するフレーズがありません。");
-            return;
-        }
+        if (filteredPhrases.length === 0) { alert("該当するフレーズがありません。"); return; }
 
         document.getElementById('categorySelect').style.display = 'none';
         document.getElementById('btnStart').style.display = 'none';
         document.getElementById('btnNext').style.display = 'flex';
         document.getElementById('btnEnd').style.display = 'flex';
         document.getElementById('mainVisual').style.display = 'block';
-        document.getElementById('statusStrip').style.display = 'flex';
         
         availableIndexes = [];
         nextPhrase();
@@ -324,8 +345,10 @@
 
     function nextPhrase() {
         document.getElementById('vietnameseBox').style.display = 'none';
+        document.getElementById('vocabBox').style.display = 'none';
         document.getElementById('btnListenFast').style.display = 'none';
         document.getElementById('btnListenSlow').style.display = 'none';
+        document.getElementById('btnVocab').style.display = 'none';
         
         const phraseIndex = getNextRandomIndex();
         currentPhrase = filteredPhrases[phraseIndex];
@@ -337,7 +360,6 @@
             isListening = true;
             try { recognition.start(); } catch(e) { recognition.stop(); setTimeout(() => { if(isListening) recognition.start(); }, 300); }
         } else {
-            document.getElementById('statusText').innerText = "※マイク非対応環境";
             setTimeout(showSuccess, 3000);
         }
     }
@@ -345,13 +367,27 @@
     function showSuccess() {
         isListening = false; if(recognition) { try { recognition.stop(); } catch(e) {} }
         document.getElementById('earMark').classList.remove('ear-active');
-        document.getElementById('statusText').innerText = "SUCCESS! CORRECT PRONUNCIATION";
+        document.getElementById('earMark').style.display = 'none';
+        
         document.getElementById('vnMainText').innerText = currentPhrase.vn;
         document.getElementById('vnSubText').innerText = currentPhrase.kana;
         document.getElementById('vietnameseBox').style.display = 'block';
+        
         document.getElementById('btnListenFast').style.display = 'flex';
         document.getElementById('btnListenSlow').style.display = 'flex';
+        document.getElementById('btnVocab').style.display = 'flex';
+        
         playVietnamese(1.0);
+    }
+
+    function toggleVocab() {
+        const vocabBox = document.getElementById('vocabBox');
+        if (vocabBox.style.display === 'block') {
+            vocabBox.style.display = 'none';
+        } else {
+            document.getElementById('vocabList').innerText = currentPhrase.words;
+            vocabBox.style.display = 'block';
+        }
     }
 
     function playVietnamese(speedRate) {
@@ -366,15 +402,18 @@
 
     function endApp() {
         isListening = false; if(recognition) { try { recognition.stop(); } catch(e) {} }
-        currentPhrase = null;
-        availableIndexes = [];
+        currentPhrase = null; availableIndexes = [];
+        
         document.getElementById('mainVisual').style.display = 'none';
-        document.getElementById('statusStrip').style.display = 'none';
         document.getElementById('vietnameseBox').style.display = 'none';
+        document.getElementById('vocabBox').style.display = 'none';
         document.getElementById('btnListenFast').style.display = 'none';
         document.getElementById('btnListenSlow').style.display = 'none';
+        document.getElementById('btnVocab').style.display = 'none';
         document.getElementById('btnNext').style.display = 'none';
         document.getElementById('btnEnd').style.display = 'none';
+        document.getElementById('earMark').classList.remove('ear-active');
+        document.getElementById('earMark').style.display = 'none';
         
         document.getElementById('categorySelect').style.display = 'inline-block';
         document.getElementById('btnStart').style.display = 'flex';
