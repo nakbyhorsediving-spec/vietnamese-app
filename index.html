@@ -2,102 +2,106 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ベトナム語学習アプリ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ベトナム語学習アプリ（PC専用版）</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        /* 画面スクロールを禁止し、縦幅いっぱいに収める設定 */
+        /* PCの全画面表示に対応し、スクロールを完全に禁止 */
         html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #f7f9fa;
+            background-color: #f0f4f8;
         }
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            padding: 20px;
         }
 
-        /* 画面内にぴったり収まるよう縦幅をvh単位で制御 */
+        /* PC大画面で見栄えが良いサイズ（横幅最大1100px、高さは画面の90%固定） */
         .app-window {
             width: 100%;
-            max-width: 900px;
-            height: 95vh;
-            max-height: 800px;
+            max-width: 1100px;
+            height: 90vh;
             background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 12px 36px rgba(0,0,0,0.15);
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.12);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             position: relative;
+            border: 1px solid #dcdcdc;
         }
 
+        /* ヘッダー */
         .app-header {
             background-color: #e3f2fd;
             color: #1565c0;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 800;
             text-align: center;
-            padding: 10px 0;
+            padding: 15px 0;
             border-bottom: 2px solid #bbdefb;
             flex-shrink: 0;
+            letter-spacing: 1px;
         }
 
-        /* 画像エリアの縦幅を少しコンパクトにし、スクロールを防ぐ */
+        /* メイン画像エリア（画面の縦幅に合わせて自動伸縮） */
         .main-visual {
             width: 100%;
-            flex: 1;
-            min-height: 200px;
+            flex: 1; 
             background-color: #f5f5f5;
             background-image: url('cafe.png');
             background-size: cover;
-            background-position: center;
+            background-position: center 40%;
             position: relative;
             display: none;
         }
 
+        /* 顔を隠さない上部中央の吹き出し */
         .speech-bubble {
             position: absolute;
-            top: 15px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
             background: #ffffff;
             border: 3px solid #455a64;
-            border-radius: 30px;
-            padding: 8px 20px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            border-radius: 35px;
+            padding: 10px 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10;
         }
-        .speech-bubble::after { content: ''; position: absolute; bottom: -12px; left: 45%; border-width: 12px 12px 0; border-style: solid; border-color: #ffffff transparent; z-index: 11; }
-        .speech-bubble::before { content: ''; position: absolute; bottom: -16px; left: 45%; border-width: 13px 13px 0; border-style: solid; border-color: #455a64 transparent; z-index: 9; }
-        .bubble-content { font-size: 38px; display: flex; align-items: center; gap: 10px; }
+        .speech-bubble::after { content: ''; position: absolute; bottom: -14px; left: 45%; border-width: 14px 14px 0; border-style: solid; border-color: #ffffff transparent; z-index: 11; }
+        .speech-bubble::before { content: ''; position: absolute; bottom: -18px; left: 45%; border-width: 15px 15px 0; border-style: solid; border-color: #455a64 transparent; z-index: 9; }
+        .bubble-content { font-size: 48px; display: flex; align-items: center; gap: 10px; }
 
+        /* 聞き取り状態の黄色いアナウンス帯 */
         .status-strip {
             background-color: #fffde7;
             border-top: 2px solid #fff59d;
             border-bottom: 2px solid #fff59d;
-            padding: 8px 20px;
+            padding: 12px 20px;
             display: none;
             align-items: center;
             justify-content: center;
             gap: 15px;
             flex-shrink: 0;
         }
-        .ear-mark { font-size: 24px; display: inline-block; }
+        .ear-mark { font-size: 26px; display: inline-block; }
         .ear-active { animation: ear-blink 1.2s infinite ease-in-out; }
         @keyframes ear-blink { 0% { opacity: 0.3; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.3; transform: scale(0.95); } }
-        .status-text { color: #0d47a1; font-size: 18px; font-weight: 700; }
+        .status-text { color: #0d47a1; font-size: 20px; font-weight: 700; }
 
+        /* テキスト表示エリア */
         .content-body {
-            padding: 15px;
+            padding: 20px 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -105,31 +109,34 @@
             flex-shrink: 0;
         }
 
+        /* 日本語テキスト */
         .japanese-box {
-            font-size: 32px;
+            font-size: 38px;
             font-weight: 800;
             color: #000000;
             margin: 5px 0;
-            line-height: 1.3;
+            line-height: 1.4;
             text-align: center;
         }
 
+        /* ベトナム語翻訳表示エリア */
         .vietnamese-box {
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             background-color: #f1f8e9;
             border: 2px solid #c5e1a5;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 14px;
+            padding: 15px 20px;
             margin-top: 10px;
             text-align: center;
             display: none;
         }
-        .vn-main-text { font-size: 32px; color: #1b5e20; font-weight: 800; margin-bottom: 4px; }
-        .vn-sub-text { font-size: 20px; color: #558b2f; font-weight: 700; }
+        .vn-main-text { font-size: 38px; color: #1b5e20; font-weight: 800; margin-bottom: 4px; }
+        .vn-sub-text { font-size: 22px; color: #558b2f; font-weight: 700; letter-spacing: 0.5px; }
 
+        /* 操作パネル */
         .control-panel {
-            padding: 15px 25px;
+            padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -137,30 +144,35 @@
             border-top: 1px solid #eceff1;
             flex-shrink: 0;
         }
-        .btn-left-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-left-group { display: flex; gap: 15px; }
         
+        /* PCで押しやすい大型の四角形ボタン */
         .app-btn {
             background: #ffffff;
             border: 2px solid #cfd8dc;
             border-radius: 8px;
-            padding: 6px 20px;
+            padding: 10px 30px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             transition: all 0.2s;
         }
-        .app-btn:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .btn-label-ja { font-size: 18px; font-weight: 800; color: #000000; }
-        .btn-label-en { font-size: 10px; font-weight: 700; color: #546e7a; margin-top: 1px; text-transform: uppercase; }
+        .app-btn:hover { background-color: #f8f9fa; border-color: #b0bec5; }
+        .app-btn:active { transform: translateY(1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-label-ja { font-size: 22px; font-weight: 800; color: #000000; }
+        .btn-label-en { font-size: 11px; font-weight: 700; color: #546e7a; margin-top: 2px; text-transform: uppercase; }
 
+        /* きくボタン（専用グリーン） */
         .btn-listen-fast, .btn-listen-slow { background-color: #4caf50; border-color: #43a047; display: none; }
         .btn-listen-fast .btn-label-ja, .btn-listen-slow .btn-label-ja { color: #ffffff; }
         .btn-listen-fast .btn-label-en, .btn-listen-slow .btn-label-en { color: #e8f5e9; }
+        .btn-listen-fast:hover, .btn-listen-slow:hover { background-color: #388e3c; border-color: #2e7d32; }
 
-        .credit-text { font-size: 16px; font-weight: 700; color: #000000; white-space: nowrap; }
+        /* クレジット表記 */
+        .credit-text { font-size: 18px; font-weight: 700; color: #000000; }
     </style>
 </head>
 <body>
@@ -206,7 +218,6 @@
         { js: "犬を飼っていますか", vn: "Bạn có nuôi chó không?", kana: "バン コー ヌオイ チョー コン", icon: "🐶❓" }
     ];
 
-    // 重複なしランダム管理用の配列
     let availableIndexes = [];
     let currentPhrase = null; 
     let recognition = null; 
@@ -233,10 +244,8 @@
         };
     }
 
-    // 重複なしでランダムに1つのインデックスを抽出する関数
     function getNextRandomIndex() {
         if (availableIndexes.length === 0) {
-            // 5問すべて使い切ったら、インデックス配列(0〜4)を再生成してリセット
             availableIndexes = phrases.map((_, index) => index);
         }
         const randomIndexInArray = Math.floor(Math.random() * availableIndexes.length);
@@ -250,7 +259,7 @@
         document.getElementById('btnEnd').style.display = 'flex';
         document.getElementById('mainVisual').style.display = 'block';
         document.getElementById('statusStrip').style.display = 'flex';
-        availableIndexes = []; // 出題リストを初期化
+        availableIndexes = [];
         nextPhrase();
     }
 
@@ -259,7 +268,6 @@
         document.getElementById('btnListenFast').style.display = 'none';
         document.getElementById('btnListenSlow').style.display = 'none';
         
-        // 重複なしランダムで次のフレーズを決定
         const phraseIndex = getNextRandomIndex();
         currentPhrase = phrases[phraseIndex];
         
